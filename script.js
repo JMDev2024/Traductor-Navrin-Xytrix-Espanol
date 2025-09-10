@@ -2,75 +2,69 @@
 // 🌿⚡ Traductor Español ↔ Návrin ↔ Xytrix
 // ================================
 
-// ----------- Tablas de conversión -----------
+// ----------- Mapas fonéticos -----------
 
-// Návrin: mapa letra -> símbolo rúnico
-const navrinMap = {
+// Fonético Návrin (para pronunciación en caracteres ES)
+const navrinPhonetic = {
+  a: "a", b: "ba", c: "ka", d: "da", e: "e", f: "fa", g: "ga",
+  h: "ha", i: "i", j: "ya", k: "ka", l: "la", m: "ma", n: "na",
+  ñ: "ña", o: "o", p: "pa", q: "ka", r: "ra", s: "sa", t: "ta",
+  u: "u", v: "va", w: "wa", x: "xa", y: "ya", z: "za"
+};
+
+// Símbolos Návrin (rúnicos)
+const navrinSymbols = {
   a: "⌠", b: "ᚱ", c: "Ϟ", d: "⍟", e: "∴", f: "⌧", g: "ϗ",
   h: "ᛦ", i: "◊", j: "ʓ", k: "Ϟ", l: "∆", m: "Ω", n: "λ",
   ñ: "Ӝ", o: "⊙", p: "Φ", q: "ψ", r: "⊗", s: "§", t: "†",
   u: "∪", v: "√", w: "ω", x: "☒", y: "¥", z: "ζ"
 };
-const navrinReverse = Object.fromEntries(
-  Object.entries(navrinMap).map(([k,v]) => [v,k])
-);
 
-// Xytrix: mapa letra -> símbolo digital
-const xytrixMap = {
+// Fonético Xytrix (pronunciación)
+const xytrixPhonetic = {
+  a: "ax", b: "b", c: "k", d: "dex", e: "ei", f: "f", g: "gx",
+  h: "h", i: "1", j: "jx", k: "k", l: "l", m: "mek", n: "nek",
+  ñ: "ñx", o: "0", p: "p", q: "kx", r: "rax", s: "sys", t: "tek",
+  u: "ux", v: "v", w: "w", x: "x", y: "yx", z: "zx"
+};
+
+// Símbolos digitales Xytrix
+const xytrixSymbols = {
   a: "A1", b: "B0", c: "C7", d: "D9", e: "E3", f: "F4", g: "G6",
   h: "H#", i: "1", j: "J5", k: "K=", l: "L", m: "M=", n: "N-",
   ñ: "Ñ%", o: "0", p: "P+", q: "Q?", r: "R2", s: "S$", t: "T%",
   u: "U^", v: "V*", w: "W~", x: "X/", y: "Y=", z: "Z="
 };
-const xytrixReverse = Object.fromEntries(
-  Object.entries(xytrixMap).map(([k,v]) => [v.toLowerCase(),k])
-);
 
 // ----------- Funciones de traducción -----------
 
 function toNavrin(text) {
-  return text
-    .toLowerCase()
-    .split("")
-    .map(ch => navrinMap[ch] || ch)
-    .join(" ");
-}
-
-function fromNavrin(text) {
-  return text
-    .split(/\s+/)
-    .map(sym => navrinReverse[sym] || sym)
-    .join("");
+  return {
+    phonetic: text.toLowerCase().split("").map(ch => navrinPhonetic[ch] || ch).join(""),
+    symbols: text.toLowerCase().split("").map(ch => navrinSymbols[ch] || ch).join(" ")
+  };
 }
 
 function toXytrix(text) {
-  return text
-    .toLowerCase()
-    .split("")
-    .map(ch => xytrixMap[ch] || ch)
-    .join("|");
+  return {
+    phonetic: text.toLowerCase().split("").map(ch => xytrixPhonetic[ch] || ch).join("-"),
+    symbols: text.toLowerCase().split("").map(ch => xytrixSymbols[ch] || ch).join("|")
+  };
 }
 
-function fromXytrix(text) {
-  return text
-    .split(/[|\s]+/)
-    .map(sym => xytrixReverse[sym.toLowerCase()] || sym)
-    .join("");
-}
-
-// Traducción universal
 function translate(text, from, to) {
-  if (from === to) return text;
+  if (from === to) return { phonetic: text, symbols: text };
 
-  // Convertir cualquier idioma a español primero
+  // Paso 1: convertir todo a español
   let spanish = text;
-  if (from === "navrin") spanish = fromNavrin(text);
-  else if (from === "xytrix") spanish = fromXytrix(text);
+  // (Por simplicidad aún no implementamos reverso fonético → ES,
+  // pero lo puedes ampliar después)
 
-  // Luego convertir de español al destino
+  // Paso 2: español → destino
   if (to === "navrin") return toNavrin(spanish);
   if (to === "xytrix") return toXytrix(spanish);
-  return spanish;
+
+  return { phonetic: spanish, symbols: spanish };
 }
 
 // ----------- UI -----------
@@ -80,7 +74,9 @@ document.getElementById("translateBtn").addEventListener("click", () => {
   const from = document.getElementById("fromLang").value;
   const to = document.getElementById("toLang").value;
   const result = translate(input, from, to);
-  document.getElementById("outputText").value = result;
+
+  document.getElementById("outputSymbols").value = result.symbols;
+  document.getElementById("outputPhonetic").value = result.phonetic;
 });
 
 // Intercambiar idiomas
@@ -92,40 +88,10 @@ document.getElementById("swapBtn").addEventListener("click", () => {
   toSel.value = temp;
 });
 
-// Copiar resultado
+// Copiar pronunciación
 document.getElementById("copyBtn").addEventListener("click", () => {
-  const output = document.getElementById("outputText");
+  const output = document.getElementById("outputSymbols");
   output.select();
   document.execCommand("copy");
-  alert("Texto copiado al portapapeles");
-});
-
-// ----------- Voz y Audio -----------
-
-// Configuración de voces (usando SpeechSynthesis API)
-function speakText(text, voiceType="human") {
-  const msg = new SpeechSynthesisUtterance(text);
-
-  if (voiceType === "mystic") {
-    msg.pitch = 0.6; msg.rate = 0.9; msg.voice = speechSynthesis.getVoices()[0];
-  } else if (voiceType === "tech") {
-    msg.pitch = 1.5; msg.rate = 1.2; msg.voice = speechSynthesis.getVoices()[1];
-  } else {
-    msg.pitch = 1; msg.rate = 1; msg.voice = speechSynthesis.getVoices()[2];
-  }
-
-  speechSynthesis.speak(msg);
-}
-
-document.getElementById("speakBtn").addEventListener("click", () => {
-  const text = document.getElementById("outputText").value;
-  speakText(text, "mystic"); // por defecto místico
-});
-
-// Descargar audio (usando la misma API en un blob temporal)
-document.getElementById("downloadBtn").addEventListener("click", () => {
-  const text = document.getElementById("outputText").value;
-  // Nota: SpeechSynthesis no soporta descargar directo
-  // Aquí podrías integrar meSpeak.js o una librería TTS offline
-  alert("⚠ Descargar audio requiere meSpeak.js o librería TTS adicional.");
+  alert("Simbologia copiada al portapapeles");
 });
