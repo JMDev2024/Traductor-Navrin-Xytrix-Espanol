@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Traductor Návrin ↔ Xytrix</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🌿⚡ Traductor Návrin ↔ Xytrix ↔ Español</h1>
+
+    <!-- Selección de idiomas -->
+    <div class="selectors">
+      <select id="fromLang">
+        <option value="es">Español</option>
+        <option value="navrin">Návrin</option>
+        <option value="xytrix">Xytrix</option>
+      </select>
+
+      <button id="swapBtn">⇆</button>
+
+      <select id="toLang">
+        <option value="navrin">Návrin</option>
+        <option value="xytrix">Xytrix</option>
+        <option value="es">Español</option>
+      </select>
+    </div>
+
+    <!-- Área de texto -->
+    <div class="areas">
+      <textarea id="inputText" placeholder="Escribe aquí..."></textarea>
+      <textarea id="outputText" readonly></textarea>
+    </div>
+
+    <!-- Botones -->
+    <div class="buttons">
+      <button id="translateBtn">Traducir</button>
+      <button id="copyBtn">📋 Copiar</button>
+      <button id="speakBtn">🔊 Hablar</button>
+      <button id="downloadBtn">⬇ Descargar Audio</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
